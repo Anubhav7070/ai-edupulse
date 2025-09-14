@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 import { 
   BookOpen, 
   Target, 
@@ -17,7 +18,9 @@ import {
   Upload,
   Brain,
   CheckCircle2,
-  Activity
+  Activity,
+  Plus,
+  RefreshCw
 } from 'lucide-react';
 
 interface Course {
@@ -41,9 +44,7 @@ interface AIInsight {
 
 export function CurriculumManager() {
   const [selectedCourse, setSelectedCourse] = useState<string>('');
-  
-  // Mock course data
-  const [courses] = useState<Course[]>([
+  const [courses, setCourses] = useState<Course[]>([
     {
       id: '1',
       name: 'Computer Science 101',
@@ -85,9 +86,19 @@ export function CurriculumManager() {
       status: 'active'
     }
   ]);
+  
+  // Form state for new course creation
+  const [newCourse, setNewCourse] = useState({
+    name: '',
+    modules: '',
+    description: ''
+  });
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
+  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const { toast } = useToast();
 
   // Mock AI insights
-  const [aiInsights] = useState<AIInsight[]>([
+  const [aiInsights, setAiInsights] = useState<AIInsight[]>([
     {
       type: 'warning',
       title: 'Low Attendance in Module 3',
@@ -110,6 +121,89 @@ export function CurriculumManager() {
       recommendation: 'Implement early intervention system for at-risk students'
     }
   ]);
+
+  const createCourse = async () => {
+    if (!newCourse.name || !newCourse.modules || !newCourse.description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCreatingCourse(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const course: Course = {
+        id: String(courses.length + 1),
+        name: newCourse.name,
+        modules: parseInt(newCourse.modules),
+        students: 0,
+        completion: 0,
+        performance: 0,
+        attendanceRate: 0,
+        status: 'planning'
+      };
+      
+      setCourses(prev => [...prev, course]);
+      setNewCourse({ name: '', modules: '', description: '' });
+      setIsCreatingCourse(false);
+      
+      toast({
+        title: "Course Created Successfully!",
+        description: `${newCourse.name} has been added to your curriculum.`,
+      });
+    }, 1500);
+  };
+
+  const importFromFile = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        toast({
+          title: "File Import Started",
+          description: `Processing ${file.name}...`,
+        });
+        
+        // Simulate file processing
+        setTimeout(() => {
+          toast({
+            title: "Import Successful",
+            description: "Course data has been imported successfully.",
+          });
+        }, 2000);
+      }
+    };
+    input.click();
+  };
+
+  const generateNewInsights = async () => {
+    setIsGeneratingInsights(true);
+    
+    // Simulate AI insight generation
+    setTimeout(() => {
+      const newInsight: AIInsight = {
+        type: 'info',
+        title: 'New Pattern Detected',
+        description: `Students in ${courses[Math.floor(Math.random() * courses.length)].name} show improved retention with interactive content`,
+        impact: 'medium',
+        recommendation: 'Increase interactive elements in theoretical modules by 40%'
+      };
+      
+      setAiInsights(prev => [newInsight, ...prev]);
+      setIsGeneratingInsights(false);
+      
+      toast({
+        title: "New AI Insights Generated!",
+        description: "Fresh recommendations based on latest data patterns.",
+      });
+    }, 3000);
+  };
 
   const getInsightIcon = (type: string) => {
     switch (type) {
@@ -166,28 +260,54 @@ export function CurriculumManager() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="course-name">Course Name</Label>
-              <Input id="course-name" placeholder="e.g., Advanced Machine Learning" />
+              <Label htmlFor="course-name">Course Name *</Label>
+              <Input 
+                id="course-name" 
+                placeholder="e.g., Advanced Machine Learning"
+                value={newCourse.name}
+                onChange={(e) => setNewCourse(prev => ({ ...prev, name: e.target.value }))}
+              />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="course-modules">Number of Modules</Label>
-              <Input id="course-modules" type="number" placeholder="12" />
+              <Label htmlFor="course-modules">Number of Modules *</Label>
+              <Input 
+                id="course-modules" 
+                type="number" 
+                placeholder="12"
+                value={newCourse.modules}
+                onChange={(e) => setNewCourse(prev => ({ ...prev, modules: e.target.value }))}
+              />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="course-description">Course Description</Label>
+            <Label htmlFor="course-description">Course Description *</Label>
             <Textarea 
               id="course-description" 
               placeholder="Brief description of the course objectives and learning outcomes..."
               className="min-h-[100px]"
+              value={newCourse.description}
+              onChange={(e) => setNewCourse(prev => ({ ...prev, description: e.target.value }))}
             />
           </div>
           <div className="flex items-center space-x-4">
-            <Button className="bg-gradient-success text-success-foreground">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Create Course
+            <Button 
+              className="bg-gradient-success text-success-foreground"
+              onClick={createCourse}
+              disabled={isCreatingCourse}
+            >
+              {isCreatingCourse ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Course
+                </>
+              )}
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={importFromFile}>
               <FileText className="mr-2 h-4 w-4" />
               Import from File
             </Button>
@@ -310,9 +430,18 @@ export function CurriculumManager() {
                   Upload new datasets to get fresh AI recommendations
                 </p>
               </div>
-              <Button className="bg-gradient-ai text-ai-foreground">
-                <Brain className="mr-2 h-4 w-4" />
-                Generate New Insights
+              <Button className="bg-gradient-ai text-ai-foreground" onClick={generateNewInsights} disabled={isGeneratingInsights}>
+                {isGeneratingInsights ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="mr-2 h-4 w-4" />
+                    Generate New Insights
+                  </>
+                )}
               </Button>
             </div>
           </div>

@@ -159,8 +159,25 @@ export function AttendanceManager() {
   };
 
   const startFaceRecognition = () => {
-    // Mock face recognition
-    alert('Face recognition system activated! Camera is now scanning.');
+    toast({
+      title: "Face Recognition Activated",
+      description: "Camera is now scanning for student faces. Students will be automatically checked in when detected.",
+    });
+    
+    // Simulate face recognition process
+    setTimeout(() => {
+      toast({
+        title: "Student Detected",
+        description: "John Doe has been automatically checked in via face recognition.",
+      });
+    }, 3000);
+  };
+
+  const viewDetailedAnalytics = () => {
+    toast({
+      title: "Analytics Dashboard",
+      description: "Opening detailed attendance analytics and performance reports...",
+    });
   };
 
   return (
@@ -439,7 +456,7 @@ export function AttendanceManager() {
                   {stats.presentPercentage}% attendance rate for today's sessions
                 </p>
               </div>
-              <Button className="bg-gradient-analytics text-white">
+              <Button className="bg-gradient-analytics text-white" onClick={viewDetailedAnalytics}>
                 <TrendingUp className="mr-2 h-4 w-4" />
                 View Detailed Analytics
               </Button>

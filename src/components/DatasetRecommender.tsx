@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Upload, 
   Brain, 
@@ -30,6 +31,7 @@ export function DatasetRecommender() {
   const [isTraining, setIsTraining] = useState(false);
   const [progress, setProgress] = useState(0);
   const [fileName, setFileName] = useState('');
+  const { toast } = useToast();
 
   // Mock results data
   const [modelResults] = useState<ModelResult[]>([
@@ -313,13 +315,17 @@ export function DatasetRecommender() {
                   <h4 className="font-semibold text-foreground">Ready to retrain with new data?</h4>
                   <p className="text-sm text-muted-foreground">Upload a different dataset to get fresh recommendations</p>
                 </div>
-                <Button variant="outline" onClick={() => {
-                  setFileName('');
-                  setProgress(0);
-                }}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload New Dataset
-                </Button>
+              <Button variant="outline" onClick={() => {
+                setFileName('');
+                setProgress(0);
+                toast({
+                  title: "Reset Complete",
+                  description: "Ready to upload a new dataset for analysis.",
+                });
+              }}>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload New Dataset
+              </Button>
               </div>
             </div>
           </CardContent>
