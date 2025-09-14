@@ -2,41 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Smart Education Platform Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Background & Text */
+    --background: 250 100% 99%;
+    --foreground: 225 15% 15%;
 
+    /* Card System */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 225 15% 15%;
 
+    /* Popover System */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 225 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Professional Blue */
+    --primary: 225 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 225 100% 65%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Clean Gray */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 225 15% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Success - Professional Green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 96%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* AI Theme - Purple */
+    --ai-primary: 262 83% 58%;
+    --ai-secondary: 262 83% 96%;
+    --ai-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Analytics - Blue variants */
+    --analytics: 217 91% 60%;
+    --analytics-light: 217 91% 96%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Muted System */
+    --muted: 220 14% 96%;
+    --muted-foreground: 225 9% 46%;
 
-    --radius: 0.5rem;
+    /* Accent System */
+    --accent: 225 100% 96%;
+    --accent-foreground: 225 15% 15%;
+
+    /* Status Colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Interface Elements */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 225 83% 53%;
+
+    /* Design System Enhancements */
+    --radius: 0.75rem;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(225 83% 53%) 0%, hsl(225 100% 65%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 76% 46%) 100%);
+    --gradient-ai: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(262 83% 68%) 100%);
+    --gradient-analytics: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 70%) 100%);
+    
+    /* Shadows */
+    --shadow-soft: 0 1px 3px 0 hsl(225 83% 53% / 0.1), 0 1px 2px -1px hsl(225 83% 53% / 0.1);
+    --shadow-medium: 0 4px 6px -1px hsl(225 83% 53% / 0.1), 0 2px 4px -2px hsl(225 83% 53% / 0.1);
+    --shadow-large: 0 10px 15px -3px hsl(225 83% 53% / 0.1), 0 4px 6px -4px hsl(225 83% 53% / 0.1);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
