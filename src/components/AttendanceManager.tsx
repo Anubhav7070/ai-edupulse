@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import QRCode from 'qrcode';
 import { 
   QrCode, 
   Camera, 
@@ -31,6 +33,10 @@ interface AttendanceRecord {
 export function AttendanceManager() {
   const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('daily');
+  const [qrCodeImage, setQrCodeImage] = useState<string>('');
+  const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const { toast } = useToast();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Mock attendance data
   const [attendanceRecords] = useState<AttendanceRecord[]>([
@@ -102,9 +108,54 @@ export function AttendanceManager() {
 
   const stats = getAttendanceStats();
 
-  const generateQRCode = () => {
-    // Mock QR code generation
-    alert('QR Code generated for attendance! Students can now scan to check in.');
+  const generateQRCode = async () => {
+    if (!selectedCourse) {
+      toast({
+        title: "Please select a course",
+        description: "You need to select a course before generating a QR code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingQR(true);
+    try {
+      // Generate attendance URL with course and timestamp
+      const attendanceData = {
+        course: selectedCourse,
+        timestamp: Date.now(),
+        sessionId: `session_${Date.now()}`,
+        action: 'checkin'
+      };
+      
+      const qrData = JSON.stringify(attendanceData);
+      
+      // Generate QR code as data URL
+      const qrCodeDataURL = await QRCode.toDataURL(qrData, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#1e40af', // Blue color to match theme
+          light: '#ffffff'
+        }
+      });
+      
+      setQrCodeImage(qrCodeDataURL);
+      
+      toast({
+        title: "QR Code Generated!",
+        description: `QR code created for ${selectedCourse}. Students can scan to check in.`,
+      });
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast({
+        title: "Error generating QR code",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingQR(false);
+    }
   };
 
   const startFaceRecognition = () => {
@@ -155,11 +206,46 @@ export function AttendanceManager() {
             <Button 
               onClick={generateQRCode}
               className="w-full bg-gradient-primary text-primary-foreground"
-              disabled={!selectedCourse}
+              disabled={!selectedCourse || isGeneratingQR}
             >
               <QrCode className="mr-2 h-4 w-4" />
-              Generate QR Code
+              {isGeneratingQR ? 'Generating...' : 'Generate QR Code'}
             </Button>
+            
+            {/* QR Code Display */}
+            {qrCodeImage && (
+              <div className="mt-6 p-4 bg-muted/50 rounded-lg text-center">
+                <h4 className="font-semibold mb-3">Attendance QR Code</h4>
+                <div className="bg-white p-4 rounded-lg inline-block shadow-medium">
+                  <img src={qrCodeImage} alt="Attendance QR Code" className="w-48 h-48" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-3">
+                  Students can scan this QR code to check in for {selectedCourse}
+                </p>
+                <div className="flex gap-2 mt-4 justify-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.download = `qr-code-${selectedCourse.replace(/\s+/g, '-').toLowerCase()}.png`;
+                      link.href = qrCodeImage;
+                      link.click();
+                    }}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setQrCodeImage('')}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
