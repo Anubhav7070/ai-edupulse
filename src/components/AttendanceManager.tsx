@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import QRCode from 'qrcode';
 import { 
   QrCode, 
-  Camera, 
   Users, 
   Calendar,
   Clock,
@@ -25,7 +24,7 @@ interface AttendanceRecord {
   studentName: string;
   studentId: string;
   checkInTime: string;
-  method: 'qr' | 'face';
+  method: 'qr';
   status: 'present' | 'late' | 'absent';
   course: string;
 }
@@ -38,7 +37,7 @@ export function AttendanceManager() {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  // Mock attendance data
+  // Mock attendance data (QR-only)
   const [attendanceRecords] = useState<AttendanceRecord[]>([
     {
       id: '1',
@@ -54,7 +53,7 @@ export function AttendanceManager() {
       studentName: 'Bob Smith',
       studentId: 'ST002',
       checkInTime: '09:25 AM',
-      method: 'face',
+      method: 'qr',
       status: 'late',
       course: 'Computer Science 101'
     },
@@ -72,7 +71,7 @@ export function AttendanceManager() {
       studentName: 'David Wilson',
       studentId: 'ST004',
       checkInTime: '09:30 AM',
-      method: 'face',
+      method: 'qr',
       status: 'late',
       course: 'Mathematics 201'
     },
@@ -158,20 +157,7 @@ export function AttendanceManager() {
     }
   };
 
-  const startFaceRecognition = () => {
-    toast({
-      title: "Face Recognition Activated",
-      description: "Camera is now scanning for student faces. Students will be automatically checked in when detected.",
-    });
-    
-    // Simulate face recognition process
-    setTimeout(() => {
-      toast({
-        title: "Student Detected",
-        description: "John Doe has been automatically checked in via face recognition.",
-      });
-    }, 3000);
-  };
+  // Face recognition action removed as per request
 
   const viewDetailedAnalytics = () => {
     toast({
@@ -180,13 +166,72 @@ export function AttendanceManager() {
     });
   };
 
+  const exportAttendance = () => {
+    try {
+      const headers = [
+        'ID',
+        'Student Name',
+        'Student ID',
+        'Course',
+        'Check-in Time',
+        'Method',
+        'Status'
+      ];
+
+      const rows = attendanceRecords.map(r => [
+        r.id,
+        r.studentName,
+        r.studentId,
+        r.course,
+        r.checkInTime,
+        r.method.toUpperCase(),
+        r.status
+      ]);
+
+      const csvContent = [headers, ...rows]
+        .map(row => row
+          .map(field => {
+            const value = String(field ?? '');
+            // Escape quotes, wrap fields containing commas/quotes/newlines
+            const escaped = value.replace(/"/g, '""');
+            return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped;
+          })
+          .join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const date = new Date();
+      const iso = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      link.href = url;
+      link.download = `attendance-${selectedPeriod}-${iso}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Export complete',
+        description: 'Attendance data downloaded as CSV.'
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: 'Export failed',
+        description: 'Could not export attendance. Please try again.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold text-foreground">Attendance Management</h2>
           <p className="text-muted-foreground mt-2">
-            Track student attendance with QR codes and face recognition
+            Track student attendance with QR codes
           </p>
         </div>
         <div className="bg-gradient-analytics p-3 rounded-lg">
@@ -195,7 +240,7 @@ export function AttendanceManager() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         <Card className="border-0 shadow-medium">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -266,35 +311,7 @@ export function AttendanceManager() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-medium">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Camera className="h-5 w-5" />
-              <span>Face Recognition</span>
-            </CardTitle>
-            <CardDescription>
-              Automated attendance using facial recognition technology
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <div className="w-2 h-2 rounded-full bg-success"></div>
-                <span className="text-sm font-medium">Camera Status: Ready</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                AI-powered face recognition is ready to identify students
-              </p>
-            </div>
-            <Button 
-              onClick={startFaceRecognition}
-              className="w-full bg-gradient-ai text-ai-foreground"
-            >
-              <Camera className="mr-2 h-4 w-4" />
-              Start Face Recognition
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Face recognition section removed */}
       </div>
 
       {/* Attendance Statistics */}
@@ -383,7 +400,7 @@ export function AttendanceManager() {
                   <SelectItem value="monthly">Monthly</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={exportAttendance}>
                 <Download className="mr-2 h-4 w-4" />
                 Export
               </Button>
@@ -413,20 +430,11 @@ export function AttendanceManager() {
                   </div>
                   
                   <Badge 
-                    variant={record.method === 'qr' ? 'secondary' : 'outline'}
+                    variant={'secondary'}
                     className="text-xs"
                   >
-                    {record.method === 'qr' ? (
-                      <>
-                        <QrCode className="mr-1 h-3 w-3" />
-                        QR Code
-                      </>
-                    ) : (
-                      <>
-                        <Camera className="mr-1 h-3 w-3" />
-                        Face ID
-                      </>
-                    )}
+                    <QrCode className="mr-1 h-3 w-3" />
+                    QR Code
                   </Badge>
 
                   <Badge 
